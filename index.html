@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vacation Countdown</title>
+<style>
+  @font-face {
+    font-family: 'CustomFont';
+    src: url('https://files.catbox.moe/wg28i5.otf') format('opentype');
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: 'CustomFont', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+    color: #fff;
+    text-align: center;
+  }
+
+  .bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: url('https://mir-s3-cdn-cf.behance.net/project_modules/1400/81bb4b165684019.640b6038d133e.gif') no-repeat center center;
+    background-size: cover;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 2;
+    padding: 40px;
+  }
+
+  #title, #countdown, #message {
+    -webkit-text-stroke: 5px #000;
+    paint-order: stroke fill;
+  }
+
+  #title {
+    font-size: clamp(2.5rem, 9vw, 6rem);
+    line-height: 1.05;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.6);
+  }
+
+  #countdown {
+    font-size: clamp(1.6rem, 5vw, 3rem);
+    letter-spacing: 2px;
+    margin-top: 18px;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+  }
+
+  #message {
+    font-size: clamp(2rem, 8vw, 5.5rem);
+    text-shadow: 0 4px 24px rgba(0,0,0,0.7);
+    display: none;
+  }
+
+  .emoji {
+    position: fixed;
+    top: -10vh;
+    z-index: 5;
+    user-select: none;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  @keyframes fall {
+    to {
+      transform: translateY(120vh) rotate(360deg);
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="wrap">
+    <div id="timer">
+      <div id="title">Countdown to Vacation</div>
+      <div id="countdown">--d --h --m --s</div>
+    </div>
+    <div id="message">Enjoy your vacation! 🏝️☀️🥥</div>
+  </div>
+
+<script>
+  function getTarget() {
+    const now = new Date();
+    return new Date(now.getFullYear(), 6, 4, 0, 0, 0);
+  }
+
+  const countdownEl = document.getElementById('countdown');
+  const timerEl = document.getElementById('timer');
+  const messageEl = document.getElementById('message');
+
+  const EMOJIS = ['🏝️', '🌴', '☀️', '🌞', '🥥', '🌊', '🏖️', '🍍'];
+  let emojiInterval = null;
+
+  function tick() {
+    const now = new Date();
+    const diff = getTarget() - now;
+
+    if (diff <= 0) { endCountdown(); return; }
+
+    const days  = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const mins  = Math.floor((diff / (1000 * 60)) % 60);
+    const secs  = Math.floor((diff / 1000) % 60);
+
+    countdownEl.textContent = days + 'd ' + hours + 'h ' + mins + 'm ' + secs + 's';
+  }
+
+  function spawnEmoji() {
+    const span = document.createElement('span');
+    span.className = 'emoji';
+    span.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+    span.style.left = Math.random() * 100 + 'vw';
+    span.style.fontSize = (1.5 + Math.random() * 2.5) + 'rem';
+    const duration = 3 + Math.random() * 3;
+    span.style.animation = 'fall ' + duration + 's linear forwards';
+    document.body.appendChild(span);
+    setTimeout(() => span.remove(), duration * 1000);
+  }
+
+  function rainEmojis() {
+    emojiInterval = setInterval(spawnEmoji, 120);
+    setTimeout(() => { clearInterval(emojiInterval); emojiInterval = null; }, 5000);
+  }
+
+  let ended = false;
+  function endCountdown() {
+    if (ended) return;
+    ended = true;
+    clearInterval(timerLoop);
+    timerEl.style.display = 'none';
+    messageEl.style.display = 'block';
+    rainEmojis();
+  }
+
+  function init() {
+    if (new Date() >= getTarget()) {
+      endCountdown();
+    } else {
+      tick();
+    }
+  }
+
+  const timerLoop = setInterval(tick, 1000);
+  init();
+</script>
+</body>
+</html>
